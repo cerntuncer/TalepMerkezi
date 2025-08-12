@@ -1,0 +1,49 @@
+﻿@model IEnumerable<TalepMerkezi.Models.Talep>
+@using TalepMerkezi.Models
+@{
+    ViewData["Title"] = "Talepler";
+}
+
+<h2 class="mb-3">Talepler</h2>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:70px">#</th>
+                    <th style="width:220px">Ad Soyad</th>
+                    <th>Metin</th>
+                    <th style="width:160px">AI Etiketi</th>
+                    <th style="width:140px">Durum</th>
+                    <th style="width:180px">Tarih</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in Model)
+                {
+                    <tr>
+                        <td>@t.Id</td>
+                        <td>@t.Name @t.Surname</td>
+                        <td>@t.Text</td>
+                        <td>@(string.IsNullOrWhiteSpace(t.PredictedLabel) ? "-" : t.PredictedLabel)</td>
+                        <td>
+                            @{
+                                var tr = t.Status switch
+                                {
+                                    TalepDurumu.New => "Yeni",
+                                    TalepDurumu.InProgress => "İşlemde",
+                                    TalepDurumu.Done => "Tamamlandı",
+                                    TalepDurumu.Canceled => "İptal",
+                                    _ => t.Status.ToString()
+                                };
+                            }
+                            <span class="badge bg-secondary">@tr</span>
+                        </td>
+                        <td>@t.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

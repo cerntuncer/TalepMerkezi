@@ -1,0 +1,52 @@
+﻿@model TalepMerkezi.Models.Talep
+@{
+    ViewData["Title"] = "Talep Oluştur";
+}
+
+<h2 class="mb-1">Talep Oluştur</h2>
+<div class="text-muted mb-3">Talep detaylarını giriniz.</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-action="Create" method="post" class="needs-validation" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Ad</label>
+                    <input asp-for="Name" class="form-control" maxlength="80" placeholder="Ad" required />
+                    <div class="invalid-feedback">Ad zorunludur.</div>
+                    <span class="text-danger" asp-validation-for="Name"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Soyad</label>
+                    <input asp-for="Surname" class="form-control" maxlength="80" placeholder="Soyad" required />
+                    <div class="invalid-feedback">Soyad zorunludur.</div>
+                    <span class="text-danger" asp-validation-for="Surname"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">E-posta (opsiyonel)</label>
+                    <input asp-for="Email" class="form-control" maxlength="120" placeholder="ornek@posta.com" />
+                    <span class="text-danger" asp-validation-for="Email"></span>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Talep Metni</label>
+                    <textarea asp-for="Text" class="form-control" rows="5" minlength="5" placeholder="Talep metnini yaz..." required></textarea>
+                    <div class="invalid-feedback">En az 5 karakter yazın.</div>
+                    <span class="text-danger" asp-validation-for="Text"></span>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-success">Kaydet</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

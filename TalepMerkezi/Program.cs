@@ -1,5 +1,5 @@
-using TalepMerkezi.Data;          // EKLE
-using Microsoft.EntityFrameworkCore; // EKLE
+using TalepMerkezi.Data;         
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 

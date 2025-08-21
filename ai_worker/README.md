@@ -1,36 +1,52 @@
 # AI Worker for TalepMerkezi
 
-Python işçi, SQLite içindeki `Talepler` tablosunda AI etiketi olmayan kayıtları alır, Hugging Face Zero-Shot sınıflandırma API'siyle etiketler ve `PredictedLabel` alanını günceller.
+SQLite'taki `Talepler` tablosunda AI etiketi olmayan kayıtları bulur, Zero‑Shot sınıflandırma ile etiketler ve `PredictedLabel` alanını günceller.
 
 ## Kurulum
 
 ```bash
 cd /workspace/ai_worker
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env  # düzenleyin
+# (Opsiyonel) Sanal ortam
+python3 -m venv .venv || true
+source .venv/bin/activate || true
+pip install -r requirements.txt || true
+# Eğer venv olmazsa:
+python3 -m pip install --break-system-packages -r requirements.txt
+cp .env.example .env
 ```
 
-`.env` içindeki önemli değişkenler:
+## Çalışma Modları
+
+### 1) Uzak API (varsayılan)
+- `.env` içinde `HUGGINGFACE_API_TOKEN` girin (Read token).
+```bash
+MODE=once python3 worker.py
+```
+
+### 2) Yerel Transformers (internet/ücret olmadan)
+- `.env` içinde `USE_LOCAL_MODEL=1` yapın.
+- `LOCAL_MODEL`'i indirdiğiniz model adı veya yerel klasör yoluna ayarlayın.
+- `requirements.txt` ile birlikte `torch` kurun (platformunuza uygun):
+```bash
+# CPU örnek (Linux):
+pip install --index-url https://download.pytorch.org/whl/cpu torch
+```
+- Sonra çalıştırın:
+```bash
+MODE=once python3 worker.py
+```
+
+## Ayarlar (.env)
 - `SQLITE_PATH`: `/workspace/TalepMerkezi/app.db`
-- `HUGGINGFACE_API_TOKEN`: (opsiyonel, ücret/limit için gerebilir)
-- `CANDIDATE_LABELS`: Virgülle ayrılmış Türkçe etiketler, boşsa `labels.tr.txt` okunur
-- `WORKER_POLL_SECONDS`: watch modunda bekleme süresi
-- `BATCH_SIZE`: her döngüde işlenecek kayıt sayısı
+- `CANDIDATE_LABELS`: Virgülle ayrılmış Türkçe etiketler (veya `labels.tr.txt`).
+- `WORKER_POLL_SECONDS`: Watch modunda bekleme süresi.
+- `BATCH_SIZE`: Her turda işlenecek kayıt sayısı.
 
-## Çalıştırma
-
-- Tek sefer çalıştırma:
+## Sürekli İzleme
 ```bash
-MODE=once python worker.py
-```
-
-- Sürekli izleme (varsayılan):
-```bash
-python worker.py
+python3 worker.py
 ```
 
 ## Notlar
-- API kullanımı ilk istekte 503 döndürebilir; otomatik yeniden deneme yapılır.
-- `PredictedLabel` yazılırken `Status` alanı `InProgress` olarak güncellenir. İsterseniz bunu kaldırabilir veya farklı mantık ekleyebilirsiniz.
+- İlk çağrıda 503 gelebilir (model yüklenmesi); otomatik yeniden dener.
+- Varsayılan olarak, etiket yazarken `Status = InProgress` yapar. İsterseniz değiştirebiliriz.

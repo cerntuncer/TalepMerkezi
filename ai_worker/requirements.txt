@@ -2,3 +2,7 @@ requests>=2.31.0
 pydantic>=2.7.0
 python-dotenv>=1.0.1
 tenacity>=8.2.3
+transformers>=4.44.0
+sentencepiece>=0.2.0
+# torch is large; install a compatible build for your platform
+# Example CPU-only: pip install torch --index-url https://download.pytorch.org/whl/cpu

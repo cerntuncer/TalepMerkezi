@@ -1,7 +1,6 @@
-﻿namespace TalepMerkezi.Services.AI
+﻿namespace TalepMerkezi.Services.AI;
+
+public interface IAIClassifier
 {
-    public interface IAIClassifier
-    {
-        Task<(string category, float confidence)> ClassifyAsync(string text, CancellationToken ct = default);
-    }
+    Task<(string label, double confidence)> ClassifyAsync(string text, CancellationToken ct = default);
 }

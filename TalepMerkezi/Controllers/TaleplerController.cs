@@ -84,6 +84,7 @@ namespace TalepMerkezi.Controllers
                 await _db.SaveChangesAsync();
                 // Hatanın loglanması önerilir
             }
+            
 
             return RedirectToAction(nameof(Index));
         }

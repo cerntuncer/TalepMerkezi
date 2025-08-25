@@ -1,21 +1,31 @@
 ﻿using System.Net.Http.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace TalepMerkezi.Services.AI
 {
-    public class HttpAIClassifier : IAIClassifier
+    public sealed class HttpAIClassifier : IAIClassifier
     {
         private readonly HttpClient _http;
-        public HttpAIClassifier(HttpClient http) => _http = http;
+        private readonly string _baseUrl;
 
-        private sealed record Req(string text);
-        private sealed record Resp(string category, float confidence);
+        private record Req(string text);
+        private record Resp(bool ok, string label, double confidence, string model);
 
-        public async Task<(string category, float confidence)> ClassifyAsync(string text, CancellationToken ct = default)
+        public HttpAIClassifier(HttpClient http, IConfiguration config)
         {
-            var res = await _http.PostAsJsonAsync("/classify", new Req(text ?? string.Empty), ct);
-            res.EnsureSuccessStatusCode();
-            var dto = await res.Content.ReadFromJsonAsync<Resp>(cancellationToken: ct);
-            return (dto!.category, dto.confidence);
+            _http = http;
+            _baseUrl = config["AI:BaseUrl"] ?? "http://localhost:8000";
+        }
+
+        public async Task<(string label, double confidence)> ClassifyAsync(string text, CancellationToken ct = default)
+        {
+            var resp = await _http.PostAsJsonAsync($"{_baseUrl}/classify", new Req(text), ct);
+            resp.EnsureSuccessStatusCode();
+
+            var data = await resp.Content.ReadFromJsonAsync<Resp>(cancellationToken: ct)
+                       ?? throw new InvalidOperationException("AI response is null");
+
+            return (data.label, data.confidence);
         }
     }
 }

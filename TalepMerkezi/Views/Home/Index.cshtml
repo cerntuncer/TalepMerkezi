@@ -1,8 +1,51 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model List<TalepMerkezi.Models.Talep>
+
+@{
+    ViewData["Title"] = "Talepler";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h2>Talepler</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Ad Soyad</th>
+            <th>Metin</th>
+            <th>AI Etiketi</th>
+            <th>Durum</th>
+            <th>Tarih</th>
+            <th>İşlem</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var talep in Model)
+        {
+            <tr>
+                <td>@talep.Id</td>
+                <td>@talep.Name @talep.Surname</td>
+                <td>@talep.Text</td>
+                <td>@(string.IsNullOrEmpty(talep.PredictedLabel) ? "-" : talep.PredictedLabel)</td>
+                <td>
+                    <span class="badge bg-secondary">@talep.Status</span>
+                </td>
+                <td>@talep.CreatedAt.ToString("dd.MM.yyyy HH:mm:ss")</td>
+                <td>
+                    @if (talep.Status != TalepMerkezi.Models.TalepDurumu.Done)
+                    {
+                        <form method="post" asp-action="Classify" asp-route-id="@talep.Id" style="display:inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-primary">Sınıflandır</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <span class="text-success">Tamamlandı</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Create" class="btn btn-success">Yeni Talep</a>

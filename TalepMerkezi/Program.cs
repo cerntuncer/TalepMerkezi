@@ -1,23 +1,22 @@
 using Microsoft.EntityFrameworkCore;
-using TalepMerkezi.Data;         
+using TalepMerkezi.Data;
 using TalepMerkezi.Services.AI;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// DbContext'i SQLite ile kaydet
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddHttpClient<IAIClassifier, HttpAIClassifier>(c =>
+
+builder.Services.AddHttpClient("ai", c =>
 {
     c.BaseAddress = new Uri(builder.Configuration["AI:BaseUrl"]!);
 });
+builder.Services.AddScoped<IAIClassifier, AiClassifier>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -26,7 +25,6 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 app.UseAuthorization();
 

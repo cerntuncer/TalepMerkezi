@@ -77,13 +77,14 @@ namespace TalepMerkezi.Controllers
                 t.Status = TalepDurumu.Done;
                 await _db.SaveChangesAsync();
             }
-            catch
+           
+            catch (Exception ex)
             {
-                // Basit hata yolu: İptal durumu
+                Console.WriteLine($"[Sınıflandırma Hatası] TalepId: {t.Id}, Hata: {ex.Message}");
                 t.Status = TalepDurumu.Canceled;
                 await _db.SaveChangesAsync();
-                // Hatanın loglanması önerilir
             }
+
             
 
             return RedirectToAction(nameof(Index));

@@ -19,13 +19,21 @@ namespace TalepMerkezi.Services.AI
 
         public async Task<(string label, double confidence)> ClassifyAsync(string text, CancellationToken ct = default)
         {
-            var resp = await _http.PostAsJsonAsync($"{_baseUrl}/classify", new Req(text), ct);
-            resp.EnsureSuccessStatusCode();
+            try
+            {
+                var resp = await _http.PostAsJsonAsync($"{_baseUrl}/classify", new Req(text), ct);
+                resp.EnsureSuccessStatusCode();
 
-            var data = await resp.Content.ReadFromJsonAsync<Resp>(cancellationToken: ct)
-                       ?? throw new InvalidOperationException("AI response is null");
+                var data = await resp.Content.ReadFromJsonAsync<Resp>(cancellationToken: ct)
+                           ?? throw new InvalidOperationException("AI response is null");
 
-            return (data.label, data.confidence);
+                return (data.label, data.confidence);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[AI ERROR] {ex.Message}");
+                return ("", 0.0); // Boş sonuç dön → controller bu durumu "İptal" yapacak
+            }
         }
     }
 }

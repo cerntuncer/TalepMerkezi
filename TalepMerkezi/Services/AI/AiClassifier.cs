@@ -17,13 +17,24 @@ public sealed class AiClassifier : IAIClassifier
         _baseUrl = cfg["AI:BaseUrl"] ?? "http://localhost:8000/";
     }
 
-    public async Task<(string label, double confidence)> ClassifyAsync(string text, CancellationToken ct = default)
+   public async Task<(string label, double confidence)> ClassifyAsync(string text, CancellationToken ct = default)
+{
+    var client = _httpFactory.CreateClient("ai");
+    try
     {
-        var client = _httpFactory.CreateClient("ai");
-        var resp = await client.PostAsJsonAsync("classify", new Req(text), ct); // sadece relative path
+        var resp = await client.PostAsJsonAsync(new Uri(new Uri(_baseUrl), "classify"), new Req(text), ct);
         resp.EnsureSuccessStatusCode();
+
         var data = await resp.Content.ReadFromJsonAsync<Resp>(cancellationToken: ct)
-                   ?? throw new InvalidOperationException("AI response null");
+                   ?? throw new InvalidOperationException("AI response is null");
+
         return (data.label, data.confidence);
     }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[AI ERROR] Talep sınıflandırılırken hata oluştu: {ex.Message}");
+        throw; // tekrar fırlat, controller yakalayacak
+    }
+}
+
 }

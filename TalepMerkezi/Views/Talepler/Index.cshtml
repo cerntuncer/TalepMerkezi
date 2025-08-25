@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<TalepMerkezi.Models.Talep>
 @using TalepMerkezi.Models
 @{
-    ViewData["Title"] = "Talepler"; 
+    ViewData["Title"] = "Talepler";
 }
 
 <h2 class="mb-3">Talepler</h2>
@@ -17,6 +17,7 @@
                     <th style="width:160px">AI Etiketi</th>
                     <th style="width:140px">Durum</th>
                     <th style="width:180px">Tarih</th>
+                    <th style="width:160px">İşlem</th>
                 </tr>
             </thead>
             <tbody>
@@ -41,6 +42,23 @@
                             <span class="badge bg-secondary">@tr</span>
                         </td>
                         <td>@t.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss")</td>
+                        <td class="text-nowrap">
+                            @if (t.Status == TalepDurumu.Done)
+                            {
+                                <button class="btn btn-sm btn-outline-success" disabled>Tamamlandı</button>
+                            }
+                            else if (t.Status == TalepDurumu.InProgress)
+                            {
+                                <button class="btn btn-sm btn-outline-secondary" disabled>İşlemde…</button>
+                            }
+                            else
+                            {
+                                <form asp-action="Classify" asp-route-id="@t.Id" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-primary">Sınıflandır</button>
+                                </form>
+                            }
+                        </td>
                     </tr>
                 }
             </tbody>

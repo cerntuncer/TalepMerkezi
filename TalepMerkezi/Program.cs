@@ -1,5 +1,6 @@
-using TalepMerkezi.Data;         
 using Microsoft.EntityFrameworkCore;
+using TalepMerkezi.Data;         
+using TalepMerkezi.Services.AI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,10 @@ builder.Services.AddControllersWithViews();
 // DbContext'i SQLite ile kaydet
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddHttpClient<IAIClassifier, HttpAIClassifier>(c =>
+{
+    c.BaseAddress = new Uri(builder.Configuration["AI:BaseUrl"]!);
+});
 
 var app = builder.Build();
 

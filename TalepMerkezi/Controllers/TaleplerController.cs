@@ -72,12 +72,35 @@ namespace TalepMerkezi.Controllers
                 // 2) Python AI servisine gönder
                 var (cat, conf) = await _ai.ClassifyAsync(t.Text);
 
-                // 3) Sonuçları kaydet
-                t.PredictedLabel = cat;
-                t.Status = TalepDurumu.Done;
+                // 3) Sonuçları güven eşiği ve özel kural ile değerlendir
+                const double confidenceThreshold = 0.76; // 0.76 altını düşük güven say
+                if (string.IsNullOrWhiteSpace(cat))
+                {
+                    // AI erişim hatası veya boş etiket → iptal
+                    t.Status = TalepDurumu.Canceled;
+                }
+                else if (cat == "GenelTalep")
+                {
+                    // GenelTalep ise otomatik tamamlamıyoruz, operatör incelemesi için "Yeni" bırak
+                    t.PredictedLabel = cat;
+                    t.Status = TalepDurumu.New;
+                }
+                else if (conf < confidenceThreshold)
+                {
+                    // Düşük güven → otomatik yönlendirme yapma; operatöre bırakmak için "Yeni"
+                    t.PredictedLabel = cat;
+                    t.Status = TalepDurumu.New;
+                }
+                else
+                {
+                    // Yeterli güven → tamamlandı olarak işaretle
+                    t.PredictedLabel = cat;
+                    t.Status = TalepDurumu.Done;
+                }
+
                 await _db.SaveChangesAsync();
             }
-           
+            
             catch (Exception ex)
             {
                 Console.WriteLine($"[Sınıflandırma Hatası] TalepId: {t.Id}, Hata: {ex.Message}");

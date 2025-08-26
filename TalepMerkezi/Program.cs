@@ -11,7 +11,9 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 
 builder.Services.AddHttpClient("ai", c =>
 {
-    c.BaseAddress = new Uri(builder.Configuration["AI:BaseUrl"]!);
+    var baseUrl = builder.Configuration["AI:BaseUrl"] ?? "http://localhost:8000/";
+    c.BaseAddress = new Uri(baseUrl);
+    c.Timeout = TimeSpan.FromSeconds(5);
 });
 builder.Services.AddScoped<IAIClassifier, AiClassifier>();
 

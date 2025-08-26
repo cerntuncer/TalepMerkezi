@@ -92,6 +92,20 @@ def classify(req: ClassifyReq):
 @app.post("/classify-ml")
 def classify_ml(req: ClassifyReq):
     if not ml_manager.ready():
-        return {"ok": False, "message": "ML model not loaded. Set SEQ_CLS_MODEL_DIR to fine-tuned dir.", "model": "bert-ml"}
+        # Fallback to rule-based classification when ML model is unavailable
+        rule_resp = classify(req)
+        return {
+            "ok": True,
+            "label": rule_resp.label,
+            "confidence": rule_resp.confidence,
+            "model": rule_resp.model,
+            "scores": {},
+        }
     result = ml_manager.classify(req.text)
-    return {"ok": result.get("ok", True), "label": result.get("label", ""), "confidence": result.get("confidence", 0.0), "model": "bert-ml", "scores": result.get("scores", {})}
+    return {
+        "ok": result.get("ok", True),
+        "label": result.get("label", ""),
+        "confidence": result.get("confidence", 0.0),
+        "model": "bert-ml",
+        "scores": result.get("scores", {}),
+    }

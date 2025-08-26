@@ -22,7 +22,7 @@ public sealed class AiClassifier : IAIClassifier
     var client = _httpFactory.CreateClient("ai");
     try
     {
-        var resp = await client.PostAsJsonAsync(new Uri(new Uri(_baseUrl), "classify"), new Req(text), ct);
+        var resp = await client.PostAsJsonAsync(new Uri(new Uri(_baseUrl), "classify-ml"), new Req(text), ct);
         resp.EnsureSuccessStatusCode();
 
         var data = await resp.Content.ReadFromJsonAsync<Resp>(cancellationToken: ct)

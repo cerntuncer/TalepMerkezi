@@ -3,7 +3,9 @@ from pydantic import BaseModel
 import re
 import unicodedata
 
-app = FastAPI(title="AI Classifier", version="0.4.0")
+from ml.bert_classifier import ModelManager
+
+app = FastAPI(title="AI Classifier", version="0.5.0")
 
 class ClassifyReq(BaseModel):
     text: str
@@ -13,6 +15,9 @@ class ClassifyResp(BaseModel):
     label: str
     confidence: float
     model: str
+
+
+ml_manager = ModelManager()
 
 
 def normalize_text(text: str) -> str:
@@ -82,3 +87,11 @@ def classify(req: ClassifyReq):
 
     # Fallback: keep lower confidence to indicate uncertainty
     return ClassifyResp(ok=True, label="GenelTalep", confidence=0.60, model="rule-v2")
+
+
+@app.post("/classify-ml")
+def classify_ml(req: ClassifyReq):
+    if not ml_manager.ready():
+        return {"ok": False, "message": "ML model not loaded. Set SEQ_CLS_MODEL_DIR to fine-tuned dir.", "model": "bert-ml"}
+    result = ml_manager.classify(req.text)
+    return {"ok": result.get("ok", True), "label": result.get("label", ""), "confidence": result.get("confidence", 0.0), "model": "bert-ml", "scores": result.get("scores", {})}

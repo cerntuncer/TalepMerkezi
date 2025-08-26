@@ -363,3 +363,14 @@ MigrationBackup/
 FodyWeavers.xsd
 /ai-service/models/bert/
 /ai-service/models/bert-ner/
+# Model dosyaları
+models/
+*.bin
+*.pt
+*.ckpt
+*.h5
+*.json
+
+# Virtual environment
+venv/
+__pycache__/

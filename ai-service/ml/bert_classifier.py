@@ -51,11 +51,11 @@ class ModelManager:
 
     Environment variables:
       - SEQ_CLS_MODEL_DIR: absolute/relative path to fine-tuned model directory
-                           default: /workspace/ai-service/models/seqcls
+                           default: /workspace/ai-service/models/bert
     """
 
     def __init__(self) -> None:
-        model_dir = os.getenv("SEQ_CLS_MODEL_DIR", "/workspace/ai-service/models/seqcls")
+        model_dir = os.getenv("SEQ_CLS_MODEL_DIR", "/workspace/ai-service/models/bert")
         self.model_dir = model_dir
         self.classifier: Optional[BertTextClassifier] = None
         self._ensure_loaded_if_available()

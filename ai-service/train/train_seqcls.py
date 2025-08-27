@@ -51,13 +51,16 @@ def main() -> None:
 
     dataset = load_data(args.train_file, args.validation_file)
 
-    # Create label mapping
+    # Create label mapping from all available splits to avoid unseen-label errors
     if "train" not in dataset:
         raise RuntimeError("Dataset must contain a train split")
-    train_labels = list(set(dataset["train"][args.label_column]))
-    # Keep label order deterministic
-    train_labels = sorted(train_labels)
-    label2id = {label: idx for idx, label in enumerate(train_labels)}
+    all_labels = set(dataset["train"][args.label_column])
+    if "validation" in dataset:
+        all_labels.update(dataset["validation"][args.label_column])
+    if "test" in dataset:
+        all_labels.update(dataset["test"][args.label_column])
+    labels_sorted = sorted(list(all_labels))
+    label2id = {label: idx for idx, label in enumerate(labels_sorted)}
     id2label = {v: k for k, v in label2id.items()}
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path)
@@ -90,6 +93,11 @@ def main() -> None:
             "f1_macro": f1.compute(predictions=preds, references=labels, average="macro")["f1"],
         }
 
+    # Enable mixed precision only when CUDA or bfloat16 is available
+    import torch
+    use_fp16 = torch.cuda.is_available()
+    use_bf16 = (not use_fp16) and torch.cuda.is_available() and torch.cuda.get_device_capability(0)[0] >= 8
+
     training_args = TrainingArguments(
         output_dir=args.output_dir,
         overwrite_output_dir=True,
@@ -106,7 +114,9 @@ def main() -> None:
         load_best_model_at_end=("validation" in tokenized),
         metric_for_best_model="f1_macro" if "validation" in tokenized else None,
         greater_is_better=True,
-        fp16=True,
+        fp16=use_fp16,
+        bf16=use_bf16,
+        gradient_accumulation_steps=1 if len(tokenized["train"]) >= 16 else 2,
     )
 
     # Optional class weights and label smoothing
@@ -131,7 +141,7 @@ def main() -> None:
         return loss_fn(outputs.logits, labels)
 
     class SmoothTrainer(Trainer):
-        def compute_loss(self, model, inputs, return_outputs=False):
+        def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None, **kwargs):
             labels = inputs.get("labels")
             outputs = model(**{k: v for k, v in inputs.items() if k != "labels"})
             loss = custom_loss(outputs, labels)

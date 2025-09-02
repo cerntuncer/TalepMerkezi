@@ -52,15 +52,34 @@ class ModelManager:
     def __init__(self, model_dir: str | None = None):
         self.model_dir = model_dir or os.getenv(
             "SEQ_CLS_MODEL_DIR",
-            # Senin klasörün:
-            "ai-service/models/model_tr_support2/model_tr_support"
+            # Varsayılan yerel klasör (repo kökünden göreli):
+            "models/model_tr_support2/model_tr_support"
         )
+        # Repo içinden göreli verilmişse, ai-service köküne göre mutlak yap
+        base_ai_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+        if not os.path.isabs(self.model_dir):
+            self.model_dir = os.path.abspath(os.path.join(base_ai_dir, self.model_dir))
         self._clf: BertTextClassifier | None = None
 
     def ready(self) -> bool:
         return self._clf is not None and self._clf.ready()
 
     def load(self) -> None:
+        # 1) Doğrudan klasörü kullanmayı dene
+        candidate_dir = self.model_dir
+        # 2) Eğer yoksa, alt klasörlerde (tek seviye) config.json arayıp bul
+        if not os.path.isdir(candidate_dir) or not os.path.isfile(os.path.join(candidate_dir, "config.json")):
+            if os.path.isdir(self.model_dir):
+                # Verilen klasörün bir altındaki dizinlerde config.json ara
+                for name in os.listdir(self.model_dir):
+                    sub = os.path.join(self.model_dir, name)
+                    if os.path.isdir(sub) and os.path.isfile(os.path.join(sub, "config.json")):
+                        candidate_dir = sub
+                        break
+            else:
+                raise FileNotFoundError(f"Model directory not found: {self.model_dir}")
+
+        self.model_dir = candidate_dir
         self._clf = BertTextClassifier(self.model_dir)
         self._clf.load()
 

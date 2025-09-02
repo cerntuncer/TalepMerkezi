@@ -52,6 +52,12 @@ def _startup():
     except Exception as e:
         # Model yüklenemezse servis yine çalışır; /classify-ml kurala düşer.
         print(f"[AI] ML model load FAILED: {e}")
+    # İkinci model (support2)
+    try:
+        ml_manager_support2.load()
+        print("[AI] Support2 model loaded successfully.")
+    except Exception as e:
+        print(f"[AI] Support2 model load FAILED: {e}")
 
 
 # ==== Yardımcılar (senin kural fonksiyonların) ====

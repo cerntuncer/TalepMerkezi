@@ -14,6 +14,12 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
 // === AI Servisi ===
 // Development: Hata fırlatsın, debug kolay olsun.
 // Production: Daha toleranslı olsun, boş sonuç dönsün.
+// HttpClientFactory (hem Dev hem Prod için hazır olsun)
+builder.Services.AddHttpClient("ai", c =>
+{
+    c.Timeout = TimeSpan.FromSeconds(15);
+});
+
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<IAIClassifier, AiClassifier>();

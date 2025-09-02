@@ -1,3 +1,4 @@
+// TalepMerkezi/Services/AI/AiClassifier.cs
 using System.Net.Http.Json;
 using Microsoft.Extensions.Configuration;
 
@@ -14,27 +15,19 @@ public sealed class AiClassifier : IAIClassifier
     public AiClassifier(IHttpClientFactory httpFactory, IConfiguration cfg)
     {
         _httpFactory = httpFactory;
-        _baseUrl = cfg["AI:BaseUrl"] ?? "http://localhost:8000/";
+        _baseUrl = cfg["AI:BaseUrl"] ?? "http://localhost:8000";
     }
 
-   public async Task<(string label, double confidence)> ClassifyAsync(string text, CancellationToken ct = default)
-{
-    var client = _httpFactory.CreateClient("ai");
-    try
+    public async Task<(string label, double confidence)> ClassifyAsync(string text, CancellationToken ct = default)
     {
-        var resp = await client.PostAsJsonAsync(new Uri(new Uri(_baseUrl), "classify-ml"), new Req(text), ct);
+        var client = _httpFactory.CreateClient("ai");
+        var url = $"{_baseUrl.TrimEnd('/')}/classify-support2";
+
+        var resp = await client.PostAsJsonAsync(url, new Req(text), ct);
         resp.EnsureSuccessStatusCode();
 
         var data = await resp.Content.ReadFromJsonAsync<Resp>(cancellationToken: ct)
                    ?? throw new InvalidOperationException("AI response is null");
-
         return (data.label, data.confidence);
     }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"[AI ERROR] Talep sınıflandırılırken hata oluştu: {ex.Message}");
-        throw; // tekrar fırlat, controller yakalayacak
-    }
-}
-
 }

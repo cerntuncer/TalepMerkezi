@@ -363,6 +363,8 @@ MigrationBackup/
 FodyWeavers.xsd
 /ai-service/models/bert/
 /ai-service/models/bert-ner/
+/ai-service/models/model_tr_support2/
+
 # Model dosyaları
 models/
 *.bin

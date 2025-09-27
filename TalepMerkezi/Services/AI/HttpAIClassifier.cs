@@ -29,7 +29,7 @@ namespace TalepMerkezi.Services.AI
             if (string.IsNullOrWhiteSpace(text))
                 throw new ArgumentException("Sınıflandırılacak metin boş olamaz.", nameof(text));
 
-            var url = $"{_baseUrl}/classify-support2"; // ML endpoint
+            var url = $"{_baseUrl}/classify"; // ML endpoint
 
             try
             {

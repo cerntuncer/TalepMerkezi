@@ -21,7 +21,7 @@ public sealed class AiClassifier : IAIClassifier
     public async Task<(string label, double confidence)> ClassifyAsync(string text, CancellationToken ct = default)
     {
         var client = _httpFactory.CreateClient("ai");
-        var url = $"{_baseUrl.TrimEnd('/')}/classify-support2";
+        var url = $"{_baseUrl.TrimEnd('/')}/classify";
 
         var resp = await client.PostAsJsonAsync(url, new Req(text), ct);
         resp.EnsureSuccessStatusCode();

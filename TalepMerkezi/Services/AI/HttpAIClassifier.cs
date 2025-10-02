@@ -29,24 +29,28 @@ namespace TalepMerkezi.Services.AI
             if (string.IsNullOrWhiteSpace(text))
                 throw new ArgumentException("Sınıflandırılacak metin boş olamaz.", nameof(text));
 
-            var url = $"{_baseUrl}/classify"; // ML endpoint
+            var url = $"{_baseUrl}/classify"; // 👈 doğru endpoint olduğunu varsayıyoruz
 
             try
             {
+                Console.WriteLine($"[AI Request] URL: {url}");
+                Console.WriteLine($"[AI Request] Text: {text}");
+
                 var resp = await _http.PostAsJsonAsync(url, new Req(text), JsonOpts, ct);
                 resp.EnsureSuccessStatusCode();
 
                 var data = await resp.Content.ReadFromJsonAsync<Resp>(JsonOpts, ct)
                            ?? throw new InvalidOperationException("AI response is null");
 
+                Console.WriteLine($"[AI Response] Label: {data.label}, Confidence: {data.confidence}, Model: {data.model}");
+
                 return (data.label, data.confidence);
             }
             catch (Exception ex)
             {
-                // İstersen burada throw; yapıp controller'ın try/catch'ine düşürebilirsin.
-                // Controller'ın "boş etiket → Canceled" akışına uyum için aşağıyı bırakıyorum:
-                Console.WriteLine($"[AI ERROR] {ex.Message}");
-                return ("", 0.0);
+                Console.WriteLine($"[AI ERROR] AI servisine ulaşılamadı veya hata oluştu.");
+                Console.WriteLine($"[AI ERROR] Hata mesajı: {ex.Message}");
+                return ("", 0.0);  // Controller bu durumda iptal olarak işaretleyecek
             }
         }
     }
